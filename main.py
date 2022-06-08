@@ -21,33 +21,30 @@ def main() -> None:
 
 def lerEntradas() -> list:
     listaCidades: list = []
-    with open('GlobalLandTemperaturesByCity.csv') as csvfile:
+    with open('GlobalLandTemperaturesByCity.csv', encoding="utf-8") as csvfile:
         dataFrame = pd.read_csv(csvfile)
         print(f'A dataFrame tem {dataFrame.shape[0]} linhas.')
         for i in range(dataFrame.shape[0]):
-            if len(listaCidades) < 4:
-                cidade = contemCidade(listaCidades, dataFrame.iloc[i]['City'])
-                if cidade is None:
-                    cidade = Cidade(dataFrame.iloc[i]['City'],
-                                    dataFrame.iloc[i]['Country'],
-                                    textoParaFloat(dataFrame.iloc[i]['Latitude']),
-                                    textoParaFloat(dataFrame.iloc[i]['Longitude']))
-                    print(f'Cidade {cidade} adicionada.')
+            cidade = contemCidade(listaCidades, dataFrame.iloc[i]['City'])
+            if cidade is None:
+                cidade = Cidade(dataFrame.iloc[i]['City'],
+                                dataFrame.iloc[i]['Country'],
+                                textoParaFloat(dataFrame.iloc[i]['Latitude']),
+                                textoParaFloat(dataFrame.iloc[i]['Longitude']))
+                print(f'Cidade {cidade} adicionada.')
 
-                    entrada = Entrada(datetime.strptime(dataFrame.iloc[i]['dt'], '%Y-%m-%d'),
-                                      cidade,
-                                      dataFrame.iloc[i]['AverageTemperature'],
-                                      dataFrame.iloc[i]['AverageTemperatureUncertainty'])
-                    cidade.entradas.append(entrada)
-                    listaCidades.append(cidade)
-                else:
-                    entrada = Entrada(datetime.strptime(dataFrame.iloc[i]['dt'], '%Y-%m-%d'),
-                                      cidade,
-                                      dataFrame.iloc[i]['AverageTemperature'],
-                                      dataFrame.iloc[i]['AverageTemperatureUncertainty'])
-                    cidade.entradas.append(entrada)
+                entrada = Entrada(datetime.strptime(dataFrame.iloc[i]['dt'], '%Y-%m-%d'),
+                                  cidade,
+                                  dataFrame.iloc[i]['AverageTemperature'],
+                                  dataFrame.iloc[i]['AverageTemperatureUncertainty'])
+                cidade.entradas.append(entrada)
+                listaCidades.append(cidade)
             else:
-                break
+                entrada = Entrada(datetime.strptime(dataFrame.iloc[i]['dt'], '%Y-%m-%d'),
+                                  cidade,
+                                  dataFrame.iloc[i]['AverageTemperature'],
+                                  dataFrame.iloc[i]['AverageTemperatureUncertainty'])
+                cidade.entradas.append(entrada)
 
         print(f'Foram analisadas {len(listaCidades)} cidades.')
 
@@ -115,10 +112,10 @@ def plotaTemperatura(listaCidades: list) -> None:
                     dicionario[ano] = np.std(lista)
                     lista.clear()
                     ano = entrada.data.year
-        theta = np.polyfit(list(dicionario.values()), list(dicionario.keys()), 1)
 
-        plt.plot(list(dicionario.keys()), np.poly1d(np.polyfit(list(dicionario.keys()), list(dicionario.values()), 1))(
-            np.unique(dicionario.keys())))
+        plt.plot(list(int(key) for key in dicionario.keys()),
+                 np.poly1d(np.polyfit(list(int(key) for key in dicionario.keys()), list(dicionario.values()), 1))(
+                     np.unique(list(int(key) for key in dicionario.keys()))))
     plt.show()
 
 
